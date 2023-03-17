@@ -1,6 +1,5 @@
 package com.hilltop.hotel.controller;
 
-import com.hilltop.hotel.domain.entity.Hotel;
 import com.hilltop.hotel.domain.entity.Room;
 import com.hilltop.hotel.domain.entity.RoomType;
 import com.hilltop.hotel.domain.request.RoomRequestDto;
@@ -43,7 +42,6 @@ class RoomControllerTest {
     private final RoomTypeRequestDto roomTypeRequestDto = getRoomTypeRequestDto();
     private final RoomType roomType = new RoomType(getRoomTypeRequestDto());
     private final Room room = getRoom();
-    private final Hotel hotel = getHotel();
     @Mock
     private RoomService roomService;
     private MockMvc mockMvc;
@@ -274,18 +272,5 @@ class RoomControllerTest {
         room.setMaxPeople(5);
         room.setRoomType(roomType);
         return room;
-    }
-
-    /**
-     * This method is used to mock hotel.
-     *
-     * @return hotel
-     */
-    private Hotel getHotel() {
-        Hotel hotel = new Hotel();
-        hotel.setName("Hotel");
-        hotel.setLocation("Colombo");
-        hotel.setRoomCount(10);
-        return hotel;
     }
 }

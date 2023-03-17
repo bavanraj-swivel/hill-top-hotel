@@ -48,9 +48,8 @@ class HotelServiceTest {
     void Should_ThrowHillTopHotelApplicationException_When_FailedToAddHotelData() {
         when(hotelRepository.save(any())).thenThrow(new DataAccessException("Failed") {
         });
-        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class, () -> {
-            hotelService.addHotel(hotelRequestDto);
-        });
+        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
+                () -> hotelService.addHotel(hotelRequestDto));
         assertEquals("Failed to save hotel info in database.", exception.getMessage());
     }
 
@@ -69,9 +68,8 @@ class HotelServiceTest {
         when(hotelRepository.findById(any())).thenReturn(Optional.of(hotel));
         when(hotelRepository.save(any())).thenThrow(new DataAccessException("Failed") {
         });
-        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class, () -> {
-            hotelService.updateHotel(hotelRequestDto);
-        });
+        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
+                () -> hotelService.updateHotel(hotelRequestDto));
         assertEquals("Failed to update hotel info in database.", exception.getMessage());
     }
 
@@ -88,9 +86,8 @@ class HotelServiceTest {
     void Should_ThrowHillTopHotelApplicationException_When_FailedToGetHotelList() {
         when(hotelRepository.findAll()).thenThrow(new DataAccessException("Failed") {
         });
-        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class, () -> {
-            hotelService.getHotelList();
-        });
+        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
+                () -> hotelService.getHotelList());
         assertEquals("Failed to get all hotel data from database.", exception.getMessage());
     }
 
@@ -101,9 +98,8 @@ class HotelServiceTest {
     void Should_ThrowHillTopHotelApplicationException_When_FailedToGetHotelById() {
         when(hotelRepository.findById(any())).thenThrow(new DataAccessException("Failed") {
         });
-        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class, () -> {
-            hotelService.getHotelById("hid-123");
-        });
+        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
+                () -> hotelService.getHotelById("hid-123"));
         assertEquals("Failed to get hotel info from database.", exception.getMessage());
     }
 

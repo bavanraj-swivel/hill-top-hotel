@@ -27,6 +27,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
  */
 class RoomServiceTest {
 
+    private static final String ROOM_ID = "rid-123";
     private final RoomRequestDto roomRequestDto = getRoomRequestDto();
     private final Room room = getRoom();
     private final Hotel hotel = getHotel();
@@ -61,9 +62,8 @@ class RoomServiceTest {
     void Should_ThrowHillTopHotelApplicationException_When_FailedToAddRoomData() {
         when(hotelService.getHotelById(anyString())).thenThrow(new DataAccessException("Failed") {
         });
-        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class, () -> {
-            roomService.addRoom(roomRequestDto);
-        });
+        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
+                () -> roomService.addRoom(roomRequestDto));
         assertEquals("Failed to save room details on database.", exception.getMessage());
     }
 
@@ -84,9 +84,8 @@ class RoomServiceTest {
         when(roomRepository.findById(anyString())).thenReturn(Optional.of(room));
         when(hotelService.getHotelById(anyString())).thenThrow(new DataAccessException("Failed") {
         });
-        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class, () -> {
-            roomService.updateRoom(roomRequestDto);
-        });
+        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
+                () -> roomService.updateRoom(roomRequestDto));
         assertEquals("Failed to update room info in database.", exception.getMessage());
     }
 
@@ -95,7 +94,7 @@ class RoomServiceTest {
      */
     @Test
     void Should_DeleteRoomDetailFromDatabase_When_QueryIsValid() {
-        roomService.deleteRoomById("rid-123");
+        roomService.deleteRoomById(ROOM_ID);
         verify(roomRepository, times(1)).deleteById(anyString());
     }
 
@@ -103,9 +102,8 @@ class RoomServiceTest {
     void Should_ThrowHillTopHotelApplicationException_When_DeletingRoomDataIsFailed() {
         doThrow(new DataAccessException("Failed") {
         }).when(roomRepository).deleteById(anyString());
-        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class, () -> {
-            roomService.deleteRoomById("rid-123");
-        });
+        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
+                () -> roomService.deleteRoomById(ROOM_ID));
         assertEquals("Failed to delete room from database.", exception.getMessage());
     }
 
@@ -122,9 +120,8 @@ class RoomServiceTest {
     void Should_ThrowHillTopHotelApplicationException_When_FailedToGetRoomList() {
         when(roomRepository.findAllByHotelId(anyString())).thenThrow(new DataAccessException("Failed") {
         });
-        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class, () -> {
-            roomService.getRoomListByHotelId(anyString());
-        });
+        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
+                () -> roomService.getRoomListByHotelId("hid-123"));
         assertEquals("Failed to get all room data from database.", exception.getMessage());
     }
 
@@ -135,9 +132,8 @@ class RoomServiceTest {
     void Should_ThrowHillTopHotelApplicationException_When_FailedToGetRoomById() {
         when(roomRepository.findById(any())).thenThrow(new DataAccessException("Failed") {
         });
-        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class, () -> {
-            roomService.getRoomById(anyString());
-        });
+        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
+                () -> roomService.getRoomById(ROOM_ID));
         assertEquals("Failed to get room info from database.", exception.getMessage());
     }
 
@@ -154,9 +150,8 @@ class RoomServiceTest {
     void Should_ThrowHillTopHotelApplicationException_When_FailedToAddRoomTypeData() {
         when(roomTypeRepository.save(any())).thenThrow(new DataAccessException("Failed") {
         });
-        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class, () -> {
-            roomService.addRoomType(roomTypeRequestDto);
-        });
+        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
+                () -> roomService.addRoomType(roomTypeRequestDto));
         assertEquals("Failed to save room type on database.", exception.getMessage());
     }
 
@@ -167,9 +162,8 @@ class RoomServiceTest {
     void Should_ThrowHillTopHotelApplicationException_When_FailedToGetRoomTypeById() {
         when(roomTypeRepository.findById(any())).thenThrow(new DataAccessException("Failed") {
         });
-        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class, () -> {
-            roomService.getRoomTypeById(anyString());
-        });
+        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
+                () -> roomService.getRoomTypeById("rtid-123"));
         assertEquals("Failed to get room type from database.", exception.getMessage());
     }
 
@@ -180,7 +174,7 @@ class RoomServiceTest {
      */
     private RoomRequestDto getRoomRequestDto() {
         RoomRequestDto roomRequestDto = new RoomRequestDto();
-        roomRequestDto.setId("rid-123");
+        roomRequestDto.setId(ROOM_ID);
         roomRequestDto.setRoomNo("R1");
         roomRequestDto.setHotelId("hid-123");
         roomRequestDto.setRoomTypeId("rtid-123");
