@@ -104,7 +104,7 @@ public class RoomController extends BaseController {
      * @param id hotelId
      * @return room list.
      */
-    @GetMapping("/all/hotel/{id}")
+    @GetMapping("/hotel/{id}/search/{searchTerm}")
     public ResponseEntity<ResponseWrapper> listAllRoomsByHotelId(@PathVariable String id) {
         try {
             RoomListResponseDto roomListResponseDto = new RoomListResponseDto(roomService.getRoomListByHotelId(id));

@@ -76,10 +76,11 @@ public class HotelController extends BaseController {
      *
      * @return hotel list.
      */
-    @GetMapping("/all")
-    public ResponseEntity<ResponseWrapper> listAllHotels() {
+    @GetMapping("/search/{searchTerm}")
+    public ResponseEntity<ResponseWrapper> listAllHotels(@PathVariable String searchTerm) {
         try {
-            HotelListResponseDto hotelListResponseDto = new HotelListResponseDto(hotelService.getHotelList());
+            HotelListResponseDto hotelListResponseDto =
+                    new HotelListResponseDto(hotelService.getHotelList(searchTerm));
             log.debug("Successfully returned all hotels.");
             return getSuccessResponse(SuccessMessage.SUCCESSFULLY_RETURNED, hotelListResponseDto);
         } catch (HillTopHotelApplicationException e) {

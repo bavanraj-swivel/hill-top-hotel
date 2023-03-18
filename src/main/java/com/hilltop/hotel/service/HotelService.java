@@ -57,11 +57,14 @@ public class HotelService {
     /**
      * This method is used to get hotel list.
      *
+     * @param searchTerm ALL/search
      * @return hotel list.
      */
-    public List<Hotel> getHotelList() {
+    public List<Hotel> getHotelList(String searchTerm) {
         try {
-            return hotelRepository.findAll();
+            if (searchTerm.equals("ALL"))
+                return hotelRepository.findAll();
+            return hotelRepository.findByName(searchTerm);
         } catch (DataAccessException e) {
             throw new HillTopHotelApplicationException("Failed to get all hotel data from database.", e);
         }
