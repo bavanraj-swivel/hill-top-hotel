@@ -7,6 +7,7 @@ import com.hilltop.hotel.domain.request.RoomRequestDto;
 import com.hilltop.hotel.domain.request.RoomTypeRequestDto;
 import com.hilltop.hotel.exception.DataNotFoundExceptionHotel;
 import com.hilltop.hotel.exception.HillTopHotelApplicationException;
+import com.hilltop.hotel.exception.LimitExceededException;
 import com.hilltop.hotel.repository.RoomRepository;
 import com.hilltop.hotel.repository.RoomTypeRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -40,11 +41,27 @@ public class RoomService {
     public void addRoom(RoomRequestDto roomRequestDto) {
         try {
             Hotel hotel = hotelService.getHotelById(roomRequestDto.getHotelId());
+            validateRoomCountForHotel(hotel);
             RoomType roomType = getRoomTypeById(roomRequestDto.getRoomTypeId());
             roomRepository.save(new Room(roomRequestDto, hotel, roomType));
             log.debug("Successfully added room data.");
         } catch (DataAccessException e) {
             throw new HillTopHotelApplicationException("Failed to save room details on database.", e);
+        }
+    }
+
+    /**
+     * THis method is used to validate available room count for a hotel.
+     *
+     * @param hotel hotel
+     */
+    public void validateRoomCountForHotel(Hotel hotel) {
+        try {
+            int existingRoomCount = roomRepository.countByHotelId(hotel.getId());
+            if (existingRoomCount + 1 > hotel.getRoomCount())
+                throw new LimitExceededException("Room can't be added to hotel. Max room count reached for hotel.");
+        } catch (DataAccessException e) {
+            throw new HillTopHotelApplicationException("Failed to count rooms from database.", e);
         }
     }
 
@@ -57,6 +74,7 @@ public class RoomService {
         try {
             Room room = getRoomById(roomRequestDto.getId());
             Hotel hotel = hotelService.getHotelById(roomRequestDto.getHotelId());
+            validateRoomCountForHotel(hotel);
             RoomType roomType = getRoomTypeById(roomRequestDto.getRoomTypeId());
             room.updateRoom(roomRequestDto, hotel, roomType);
             roomRepository.save(room);

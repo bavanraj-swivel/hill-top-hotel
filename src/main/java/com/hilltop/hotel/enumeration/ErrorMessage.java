@@ -10,6 +10,7 @@ public enum ErrorMessage {
 
     INTERNAL_SERVER_ERROR("Something went wrong."),
     MISSING_REQUIRED_FIELDS("Required fields are missing."),
+    ROOM_LIMIT_REACHED("Maximum room count limit reached for hotel."),
     DATA_NOT_FOUND("Data not found.");
 
     private final String message;

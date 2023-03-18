@@ -8,6 +8,7 @@ import com.hilltop.hotel.enumeration.ErrorMessage;
 import com.hilltop.hotel.enumeration.SuccessMessage;
 import com.hilltop.hotel.exception.DataNotFoundExceptionHotel;
 import com.hilltop.hotel.exception.HillTopHotelApplicationException;
+import com.hilltop.hotel.exception.LimitExceededException;
 import com.hilltop.hotel.service.RoomService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +42,9 @@ public class RoomController extends BaseController {
             roomService.addRoom(roomRequestDto);
             log.debug("Successfully added room info.");
             return getSuccessResponse(SuccessMessage.SUCCESSFULLY_ADDED, null);
+        } catch (LimitExceededException e) {
+            log.error("Room limit exceeded.", e);
+            return getBadRequestErrorResponse(ErrorMessage.ROOM_LIMIT_REACHED);
         } catch (DataNotFoundExceptionHotel e) {
             log.error("Data not found.", e);
             return getBadRequestErrorResponse(ErrorMessage.DATA_NOT_FOUND);
@@ -65,6 +69,9 @@ public class RoomController extends BaseController {
             }
             roomService.updateRoom(roomRequestDto);
             return getSuccessResponse(SuccessMessage.SUCCESSFULLY_UPDATED, null);
+        } catch (LimitExceededException e) {
+            log.error("Room limit exceeded.", e);
+            return getBadRequestErrorResponse(ErrorMessage.ROOM_LIMIT_REACHED);
         } catch (DataNotFoundExceptionHotel e) {
             log.error("Data not found.", e);
             return getBadRequestErrorResponse(ErrorMessage.DATA_NOT_FOUND);
