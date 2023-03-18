@@ -23,6 +23,8 @@ import static org.mockito.MockitoAnnotations.openMocks;
  */
 class HotelServiceTest {
 
+    private static final String ALL = "ALL";
+    private static final String FAILED = "Failed.";
     private final HotelRequestDto hotelRequestDto = getHotelRequestDto();
     private final Hotel hotel = new Hotel(getHotelRequestDto());
     @Mock
@@ -46,7 +48,7 @@ class HotelServiceTest {
 
     @Test
     void Should_ThrowHillTopHotelApplicationException_When_FailedToAddHotelData() {
-        when(hotelRepository.save(any())).thenThrow(new DataAccessException("Failed") {
+        when(hotelRepository.save(any())).thenThrow(new DataAccessException(FAILED) {
         });
         HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
                 () -> hotelService.addHotel(hotelRequestDto));
@@ -66,7 +68,7 @@ class HotelServiceTest {
     @Test
     void Should_ThrowHillTopHotelApplicationException_When_FailedToUpdateHotelData() {
         when(hotelRepository.findById(any())).thenReturn(Optional.of(hotel));
-        when(hotelRepository.save(any())).thenThrow(new DataAccessException("Failed") {
+        when(hotelRepository.save(any())).thenThrow(new DataAccessException(FAILED) {
         });
         HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
                 () -> hotelService.updateHotel(hotelRequestDto));
@@ -76,27 +78,33 @@ class HotelServiceTest {
     /**
      * Unit tests for getHotelList() method
      */
-//    @Test
-//    void Should_RunFindQuery_When_GetHotelListIsCalled() {
-//        hotelService.getHotelList(anyString());
-//        verify(hotelRepository, times(1)).findAll();
-//    }
+    @Test
+    void Should_RunFindAllQuery_When_GetHotelListIsCalled() {
+        hotelService.getHotelList(ALL);
+        verify(hotelRepository, times(1)).findAll();
+    }
 
-//    @Test
-//    void Should_ThrowHillTopHotelApplicationException_When_FailedToGetHotelList() {
-//        when(hotelRepository.findAll()).thenThrow(new DataAccessException("Failed") {
-//        });
-//        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
-//                () -> hotelService.getHotelList(anyString()));
-//        assertEquals("Failed to get all hotel data from database.", exception.getMessage());
-//    }
+    @Test
+    void Should_RunFindByNameQuery_When_GetHotelListIsCalledWithSearchTerm() {
+        hotelService.getHotelList(anyString());
+        verify(hotelRepository, times(1)).findByNameContaining(anyString());
+    }
+
+    @Test
+    void Should_ThrowHillTopHotelApplicationException_When_FailedToGetHotelList() {
+        when(hotelRepository.findAll()).thenThrow(new DataAccessException(FAILED) {
+        });
+        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
+                () -> hotelService.getHotelList(ALL));
+        assertEquals("Failed to get all hotel data from database.", exception.getMessage());
+    }
 
     /**
      * Unit tests for getHotelById() method.
      */
     @Test
     void Should_ThrowHillTopHotelApplicationException_When_FailedToGetHotelById() {
-        when(hotelRepository.findById(any())).thenThrow(new DataAccessException("Failed") {
+        when(hotelRepository.findById(any())).thenThrow(new DataAccessException(FAILED) {
         });
         HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
                 () -> hotelService.getHotelById("hid-123"));

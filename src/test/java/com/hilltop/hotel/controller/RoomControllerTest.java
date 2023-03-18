@@ -8,6 +8,7 @@ import com.hilltop.hotel.enumeration.ErrorMessage;
 import com.hilltop.hotel.enumeration.SuccessMessage;
 import com.hilltop.hotel.exception.DataNotFoundExceptionHotel;
 import com.hilltop.hotel.exception.HillTopHotelApplicationException;
+import com.hilltop.hotel.exception.LimitExceededException;
 import com.hilltop.hotel.service.RoomService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 class RoomControllerTest {
 
+    private static final String FAILED = "Failed.";
     private final String ADD_ROOM_URI = "/api/room";
     private final String UPDATE_ROOM_URI = "/api/room";
     private final String DELETE_ROOM_URI = "/api/room/ID";
@@ -78,26 +80,38 @@ class RoomControllerTest {
     }
 
     @Test
-    void Should_ReturnInternalServerError_When_AddingRoomIsFailedDueToInternalErrors() throws Exception {
-        doThrow(new HillTopHotelApplicationException("Failed."))
+    void Should_ReturnRoomLimitExceededResponse_When_RoomLimitForHotelIsReached() throws Exception {
+        doThrow(new LimitExceededException(FAILED))
                 .when(roomService).addRoom(any());
         mockMvc.perform(MockMvcRequestBuilders.post(ADD_ROOM_URI)
                         .content(roomRequestDto.toLogJson())
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.message").value(ErrorMessage.INTERNAL_SERVER_ERROR.getMessage()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(ErrorMessage.ROOM_LIMIT_REACHED.getMessage()))
                 .andExpect(jsonPath("$.data").isEmpty());
     }
 
     @Test
     void Should_ReturnDataNotFoundResponse_When_AddingRoomIsFailed() throws Exception {
-        doThrow(new DataNotFoundExceptionHotel("Failed."))
+        doThrow(new DataNotFoundExceptionHotel(FAILED))
                 .when(roomService).addRoom(any());
         mockMvc.perform(MockMvcRequestBuilders.post(ADD_ROOM_URI)
                         .content(roomRequestDto.toLogJson())
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(ErrorMessage.DATA_NOT_FOUND.getMessage()))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    void Should_ReturnInternalServerError_When_AddingRoomIsFailedDueToInternalErrors() throws Exception {
+        doThrow(new HillTopHotelApplicationException(FAILED))
+                .when(roomService).addRoom(any());
+        mockMvc.perform(MockMvcRequestBuilders.post(ADD_ROOM_URI)
+                        .content(roomRequestDto.toLogJson())
+                        .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value(ErrorMessage.INTERNAL_SERVER_ERROR.getMessage()))
                 .andExpect(jsonPath("$.data").isEmpty());
     }
 
@@ -127,8 +141,20 @@ class RoomControllerTest {
     }
 
     @Test
+    void Should_ReturnRoomLimitExceededResponse_When_RoomLimitForHotelIsReachedOnUpdate() throws Exception {
+        doThrow(new LimitExceededException(FAILED))
+                .when(roomService).updateRoom(any());
+        mockMvc.perform(MockMvcRequestBuilders.put(UPDATE_ROOM_URI)
+                        .content(roomRequestDto.toLogJson())
+                        .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(ErrorMessage.ROOM_LIMIT_REACHED.getMessage()))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
     void Should_ReturnInternalServerError_When_UpdateRoomFailedDueToInternalErrors() throws Exception {
-        doThrow(new HillTopHotelApplicationException("Failed."))
+        doThrow(new HillTopHotelApplicationException(FAILED))
                 .when(roomService).updateRoom(any());
         mockMvc.perform(MockMvcRequestBuilders.put(UPDATE_ROOM_URI)
                         .content(roomRequestDto.toLogJson())
@@ -140,7 +166,7 @@ class RoomControllerTest {
 
     @Test
     void Should_ReturnDataNotFoundResponse_When_UpdateHotelIsFailed() throws Exception {
-        doThrow(new DataNotFoundExceptionHotel("Failed."))
+        doThrow(new DataNotFoundExceptionHotel(FAILED))
                 .when(roomService).updateRoom(any());
         mockMvc.perform(MockMvcRequestBuilders.put(UPDATE_ROOM_URI)
                         .content(roomRequestDto.toLogJson())
@@ -163,7 +189,7 @@ class RoomControllerTest {
 
     @Test
     void Should_ReturnInternalServerError_When_DeleteRoomIsFailedDueToInternalErrors() throws Exception {
-        doThrow(new HillTopHotelApplicationException("Failed."))
+        doThrow(new HillTopHotelApplicationException(FAILED))
                 .when(roomService).deleteRoomById(anyString());
         mockMvc.perform(MockMvcRequestBuilders.delete(DELETE_ROOM_URI)
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
@@ -187,7 +213,7 @@ class RoomControllerTest {
 
     @Test
     void Should_ReturnInternalServerError_When_ListAllRoomsByHotelIdIsFailedDueToInternalErrors() throws Exception {
-        doThrow(new HillTopHotelApplicationException("Failed."))
+        doThrow(new HillTopHotelApplicationException(FAILED))
                 .when(roomService).getRoomListByHotelIdAndSearchTerm(anyString(), anyString());
         mockMvc.perform(MockMvcRequestBuilders.get(LIST_ROOM_URI)
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))

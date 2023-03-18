@@ -6,6 +6,7 @@ import com.hilltop.hotel.domain.entity.RoomType;
 import com.hilltop.hotel.domain.request.RoomRequestDto;
 import com.hilltop.hotel.domain.request.RoomTypeRequestDto;
 import com.hilltop.hotel.exception.HillTopHotelApplicationException;
+import com.hilltop.hotel.exception.LimitExceededException;
 import com.hilltop.hotel.repository.RoomRepository;
 import com.hilltop.hotel.repository.RoomTypeRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +30,7 @@ class RoomServiceTest {
 
     private static final String ROOM_ID = "rid-123";
     private static final String ALL = "ALL";
+    private static final String FAILED = "Failed.";
     private final RoomRequestDto roomRequestDto = getRoomRequestDto();
     private final Room room = getRoom();
     private final Hotel hotel = getHotel();
@@ -61,11 +63,31 @@ class RoomServiceTest {
 
     @Test
     void Should_ThrowHillTopHotelApplicationException_When_FailedToAddRoomData() {
-        when(hotelService.getHotelById(anyString())).thenThrow(new DataAccessException("Failed") {
+        when(hotelService.getHotelById(anyString())).thenThrow(new DataAccessException(FAILED) {
         });
         HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
                 () -> roomService.addRoom(roomRequestDto));
         assertEquals("Failed to save room details on database.", exception.getMessage());
+    }
+
+    /**
+     * Unit tests for validateRoomCountForHotel() method.
+     */
+    @Test
+    void Should_ThrowLimitExceededException_When_RoomLimitIsExceeded() {
+        when(roomRepository.countByHotelId(hotel.getId())).thenReturn(10);
+        LimitExceededException exception = assertThrows(LimitExceededException.class,
+                () -> roomService.validateRoomCountForHotel(hotel));
+        assertEquals("Room can't be added to hotel. Max room count reached for hotel.", exception.getMessage());
+    }
+
+    @Test
+    void Should_ThrowHillTopHotelApplicationException_When_FailedToGetRoomCountForHotel() {
+        when(roomRepository.countByHotelId(hotel.getId())).thenThrow(new DataAccessException(FAILED) {
+        });
+        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
+                () -> roomService.validateRoomCountForHotel(hotel));
+        assertEquals("Failed to count rooms from database.", exception.getMessage());
     }
 
     /**
@@ -83,7 +105,7 @@ class RoomServiceTest {
     @Test
     void Should_ThrowHillTopHotelApplicationException_When_FailedToUpdateRoomData() {
         when(roomRepository.findById(anyString())).thenReturn(Optional.of(room));
-        when(hotelService.getHotelById(anyString())).thenThrow(new DataAccessException("Failed") {
+        when(hotelService.getHotelById(anyString())).thenThrow(new DataAccessException(FAILED) {
         });
         HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
                 () -> roomService.updateRoom(roomRequestDto));
@@ -101,7 +123,7 @@ class RoomServiceTest {
 
     @Test
     void Should_ThrowHillTopHotelApplicationException_When_DeletingRoomDataIsFailed() {
-        doThrow(new DataAccessException("Failed") {
+        doThrow(new DataAccessException(FAILED) {
         }).when(roomRepository).deleteById(anyString());
         HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
                 () -> roomService.deleteRoomById(ROOM_ID));
@@ -109,17 +131,24 @@ class RoomServiceTest {
     }
 
     /**
-     * Unit tests for getRoomListByHotelId() method.
+     * Unit tests for getRoomListByHotelIdAndSearchTerm() method.
      */
     @Test
-    void Should_RunFindQuery_When_GetRoomListByHotelIdIsCalled() {
+    void Should_RunFindByHotelIdQuery_When_GetRoomListByHotelIdIsCalled() {
         roomService.getRoomListByHotelIdAndSearchTerm(anyString(), ALL);
         verify(roomRepository, times(1)).findAllByHotelId(anyString());
     }
 
     @Test
+    void Should_RunFindByHotelIdAndRoomSearchQuery_When_GetRoomListByHotelIdIsCalled() {
+        roomService.getRoomListByHotelIdAndSearchTerm(anyString(), anyString());
+        verify(roomRepository, times(1))
+                .findAllByHotelIdAndRoomNoContaining(anyString(), anyString());
+    }
+
+    @Test
     void Should_ThrowHillTopHotelApplicationException_When_FailedToGetRoomList() {
-        when(roomRepository.findAllByHotelId(anyString())).thenThrow(new DataAccessException("Failed") {
+        when(roomRepository.findAllByHotelId(anyString())).thenThrow(new DataAccessException(FAILED) {
         });
         HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
                 () -> roomService.getRoomListByHotelIdAndSearchTerm("hid-123", ALL));
@@ -131,7 +160,7 @@ class RoomServiceTest {
      */
     @Test
     void Should_ThrowHillTopHotelApplicationException_When_FailedToGetRoomById() {
-        when(roomRepository.findById(any())).thenThrow(new DataAccessException("Failed") {
+        when(roomRepository.findById(any())).thenThrow(new DataAccessException(FAILED) {
         });
         HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
                 () -> roomService.getRoomById(ROOM_ID));
@@ -149,7 +178,7 @@ class RoomServiceTest {
 
     @Test
     void Should_ThrowHillTopHotelApplicationException_When_FailedToAddRoomTypeData() {
-        when(roomTypeRepository.save(any())).thenThrow(new DataAccessException("Failed") {
+        when(roomTypeRepository.save(any())).thenThrow(new DataAccessException(FAILED) {
         });
         HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
                 () -> roomService.addRoomType(roomTypeRequestDto));
@@ -161,7 +190,7 @@ class RoomServiceTest {
      */
     @Test
     void Should_ThrowHillTopHotelApplicationException_When_FailedToGetRoomTypeById() {
-        when(roomTypeRepository.findById(any())).thenThrow(new DataAccessException("Failed") {
+        when(roomTypeRepository.findById(any())).thenThrow(new DataAccessException(FAILED) {
         });
         HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
                 () -> roomService.getRoomTypeById("rtid-123"));

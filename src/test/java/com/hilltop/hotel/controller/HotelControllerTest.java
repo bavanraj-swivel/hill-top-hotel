@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -26,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 class HotelControllerTest {
 
+    private static final String FAILED = "Failed.";
     private final String ADD_HOTEL_URI = "/api/hotel";
     private final String UPDATE_HOTEL_URI = "/api/hotel";
     private final String LIST_ALL_HOTEL_URI = "/api/hotel/search/ALL";
@@ -67,7 +69,7 @@ class HotelControllerTest {
 
     @Test
     void Should_ReturnInternalServerError_When_AddingHotelIsFailedDueToInternalErrors() throws Exception {
-        doThrow(new HillTopHotelApplicationException("Failed."))
+        doThrow(new HillTopHotelApplicationException(FAILED))
                 .when(hotelService).addHotel(any());
         mockMvc.perform(MockMvcRequestBuilders.post(ADD_HOTEL_URI)
                         .content(hotelRequestDto.toLogJson())
@@ -104,7 +106,7 @@ class HotelControllerTest {
 
     @Test
     void Should_ReturnInternalServerError_When_UpdateHotelFailedDueToInternalErrors() throws Exception {
-        doThrow(new HillTopHotelApplicationException("Failed."))
+        doThrow(new HillTopHotelApplicationException(FAILED))
                 .when(hotelService).updateHotel(any());
         mockMvc.perform(MockMvcRequestBuilders.put(UPDATE_HOTEL_URI)
                         .content(hotelRequestDto.toLogJson())
@@ -116,7 +118,7 @@ class HotelControllerTest {
 
     @Test
     void Should_ReturnDataNotFoundResponse_When_UpdateHotelIsFailed() throws Exception {
-        doThrow(new DataNotFoundExceptionHotel("Failed."))
+        doThrow(new DataNotFoundExceptionHotel(FAILED))
                 .when(hotelService).updateHotel(any());
         mockMvc.perform(MockMvcRequestBuilders.put(UPDATE_HOTEL_URI)
                         .content(hotelRequestDto.toLogJson())
@@ -129,24 +131,24 @@ class HotelControllerTest {
     /**
      * Unit tests for listAllHotels() method.
      */
-//    @Test
-//    void Should_ReturnOk_When_ListAllHotelsIsSuccessful() throws Exception {
-//        mockMvc.perform(MockMvcRequestBuilders.get(LIST_ALL_HOTEL_URI)
-//                        .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.message").value(SuccessMessage.SUCCESSFULLY_RETURNED.getMessage()));
-//    }
+    @Test
+    void Should_ReturnOk_When_ListAllHotelsIsSuccessful() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get(LIST_ALL_HOTEL_URI)
+                        .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(SuccessMessage.SUCCESSFULLY_RETURNED.getMessage()));
+    }
 
-//    @Test
-//    void Should_ReturnInternalServerError_When_ListingAllHotelIsFailedDueToInternalErrors() throws Exception {
-//        doThrow(new HillTopHotelApplicationException("Failed."))
-//                .when(hotelService).getHotelList(anyString());
-//        mockMvc.perform(MockMvcRequestBuilders.get(LIST_ALL_HOTEL_URI)
-//                        .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isInternalServerError())
-//                .andExpect(jsonPath("$.message").value(ErrorMessage.INTERNAL_SERVER_ERROR.getMessage()))
-//                .andExpect(jsonPath("$.data").isEmpty());
-//    }
+    @Test
+    void Should_ReturnInternalServerError_When_ListingAllHotelIsFailedDueToInternalErrors() throws Exception {
+        doThrow(new HillTopHotelApplicationException(FAILED))
+                .when(hotelService).getHotelList(anyString());
+        mockMvc.perform(MockMvcRequestBuilders.get(LIST_ALL_HOTEL_URI)
+                        .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value(ErrorMessage.INTERNAL_SERVER_ERROR.getMessage()))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
 
     /**
      * This method is used to mock hotelRequestDto.
