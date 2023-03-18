@@ -178,7 +178,7 @@ class RoomControllerTest {
     @Test
     void Should_ReturnOk_When_ListAllRoomsByHotelIdIsSuccessful() throws Exception {
         List<Room> roomList = List.of(room);
-        when(roomService.getRoomListByHotelId(anyString())).thenReturn(roomList);
+        when(roomService.getRoomListByHotelIdAndSearchTerm(anyString(), anyString())).thenReturn(roomList);
         mockMvc.perform(MockMvcRequestBuilders.get(LIST_ROOM_URI)
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -188,7 +188,7 @@ class RoomControllerTest {
     @Test
     void Should_ReturnInternalServerError_When_ListAllRoomsByHotelIdIsFailedDueToInternalErrors() throws Exception {
         doThrow(new HillTopHotelApplicationException("Failed."))
-                .when(roomService).getRoomListByHotelId(anyString());
+                .when(roomService).getRoomListByHotelIdAndSearchTerm(anyString(), anyString());
         mockMvc.perform(MockMvcRequestBuilders.get(LIST_ROOM_URI)
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError())

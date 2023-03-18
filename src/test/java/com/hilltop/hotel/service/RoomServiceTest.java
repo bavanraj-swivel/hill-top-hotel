@@ -28,6 +28,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
 class RoomServiceTest {
 
     private static final String ROOM_ID = "rid-123";
+    private static final String ALL = "ALL";
     private final RoomRequestDto roomRequestDto = getRoomRequestDto();
     private final Room room = getRoom();
     private final Hotel hotel = getHotel();
@@ -112,7 +113,7 @@ class RoomServiceTest {
      */
     @Test
     void Should_RunFindQuery_When_GetRoomListByHotelIdIsCalled() {
-        roomService.getRoomListByHotelId(anyString());
+        roomService.getRoomListByHotelIdAndSearchTerm(anyString(), ALL);
         verify(roomRepository, times(1)).findAllByHotelId(anyString());
     }
 
@@ -121,7 +122,7 @@ class RoomServiceTest {
         when(roomRepository.findAllByHotelId(anyString())).thenThrow(new DataAccessException("Failed") {
         });
         HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
-                () -> roomService.getRoomListByHotelId("hid-123"));
+                () -> roomService.getRoomListByHotelIdAndSearchTerm("hid-123", ALL));
         assertEquals("Failed to get all room data from database.", exception.getMessage());
     }
 

@@ -64,7 +64,7 @@ public class HotelService {
         try {
             if (searchTerm.equals("ALL"))
                 return hotelRepository.findAll();
-            return hotelRepository.findByName(searchTerm);
+            return hotelRepository.findByNameContaining(searchTerm);
         } catch (DataAccessException e) {
             throw new HillTopHotelApplicationException("Failed to get all hotel data from database.", e);
         }

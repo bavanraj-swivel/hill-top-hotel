@@ -101,12 +101,15 @@ public class RoomService {
     /**
      * This method is used to get room list by hotelId.
      *
-     * @param hotelId hotelId
+     * @param hotelId    hotelId
+     * @param searchTerm searchTerm
      * @return room list.
      */
-    public List<Room> getRoomListByHotelId(String hotelId) {
+    public List<Room> getRoomListByHotelIdAndSearchTerm(String hotelId, String searchTerm) {
         try {
-            return roomRepository.findAllByHotelId(hotelId);
+            if (searchTerm.equals("ALL"))
+                return roomRepository.findAllByHotelId(hotelId);
+            return roomRepository.findAllByHotelIdAndRoomNoContaining(hotelId, searchTerm);
         } catch (DataAccessException e) {
             throw new HillTopHotelApplicationException("Failed to get all room data from database.", e);
         }

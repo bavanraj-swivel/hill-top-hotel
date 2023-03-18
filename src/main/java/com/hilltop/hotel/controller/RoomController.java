@@ -105,9 +105,11 @@ public class RoomController extends BaseController {
      * @return room list.
      */
     @GetMapping("/hotel/{id}/search/{searchTerm}")
-    public ResponseEntity<ResponseWrapper> listAllRoomsByHotelId(@PathVariable String id) {
+    public ResponseEntity<ResponseWrapper> listAllRoomsByHotelId(@PathVariable String id,
+                                                                 @PathVariable String searchTerm) {
         try {
-            RoomListResponseDto roomListResponseDto = new RoomListResponseDto(roomService.getRoomListByHotelId(id));
+            RoomListResponseDto roomListResponseDto =
+                    new RoomListResponseDto(roomService.getRoomListByHotelIdAndSearchTerm(id, searchTerm));
             log.debug("Successfully returned all rooms.");
             return getSuccessResponse(SuccessMessage.SUCCESSFULLY_RETURNED, roomListResponseDto);
         } catch (HillTopHotelApplicationException e) {
