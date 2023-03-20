@@ -8,7 +8,7 @@
 
 * Url: https://sonarcloud.io/project/overview?id=bavanraj-swivel_hill-top-hotel
 
-![image](https://user-images.githubusercontent.com/88472140/226264744-8fe4298a-6d5c-4c88-bfcd-f378d35c8118.png)
+![image](https://user-images.githubusercontent.com/88472140/226271708-161f1ca5-5630-475c-873f-e9f5d6684495.png)
 
 ## Postman collection
 
