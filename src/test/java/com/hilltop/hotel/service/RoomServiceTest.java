@@ -3,12 +3,10 @@ package com.hilltop.hotel.service;
 import com.hilltop.hotel.domain.entity.Hotel;
 import com.hilltop.hotel.domain.entity.Room;
 import com.hilltop.hotel.domain.entity.RoomType;
-import com.hilltop.hotel.domain.request.RoomRequestDto;
 import com.hilltop.hotel.domain.request.RoomTypeRequestDto;
+import com.hilltop.hotel.domain.request.UpdateRoomRequestDto;
 import com.hilltop.hotel.exception.HillTopHotelApplicationException;
-import com.hilltop.hotel.exception.LimitExceededException;
 import com.hilltop.hotel.repository.RoomRepository;
-import com.hilltop.hotel.repository.RoomTypeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -31,23 +29,22 @@ class RoomServiceTest {
     private static final String ROOM_ID = "rid-123";
     private static final String ALL = "ALL";
     private static final String FAILED = "Failed.";
-    private final RoomRequestDto roomRequestDto = getRoomRequestDto();
+    private final UpdateRoomRequestDto updateRoomRequestDto = getUpdateRoomRequestDto();
     private final Room room = getRoom();
     private final Hotel hotel = getHotel();
-    private final RoomTypeRequestDto roomTypeRequestDto = getRoomTypeRequestDto();
     private final RoomType roomType = new RoomType(getRoomTypeRequestDto());
     private RoomService roomService;
     @Mock
     private RoomRepository roomRepository;
     @Mock
-    private RoomTypeRepository roomTypeRepository;
+    private RoomTypeService roomTypeService;
     @Mock
     private HotelService hotelService;
 
     @BeforeEach
     void setUp() {
         openMocks(this);
-        roomService = new RoomService(roomRepository, roomTypeRepository, hotelService);
+        roomService = new RoomService(roomRepository, hotelService, roomTypeService);
     }
 
     /**
@@ -56,8 +53,8 @@ class RoomServiceTest {
     @Test
     void Should_SaveRoomDetailOnDatabase_When_ValidDataIsGiven() {
         when(hotelService.getHotelById(anyString())).thenReturn(hotel);
-        when(roomTypeRepository.findById(anyString())).thenReturn(Optional.of(roomType));
-        roomService.addRoom(roomRequestDto);
+        when(roomTypeService.getRoomTypeById(anyString())).thenReturn(roomType);
+        roomService.addRoom(updateRoomRequestDto);
         verify(roomRepository, times(1)).save(any());
     }
 
@@ -66,28 +63,8 @@ class RoomServiceTest {
         when(hotelService.getHotelById(anyString())).thenThrow(new DataAccessException(FAILED) {
         });
         HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
-                () -> roomService.addRoom(roomRequestDto));
+                () -> roomService.addRoom(updateRoomRequestDto));
         assertEquals("Failed to save room details on database.", exception.getMessage());
-    }
-
-    /**
-     * Unit tests for validateRoomCountForHotel() method.
-     */
-    @Test
-    void Should_ThrowLimitExceededException_When_RoomLimitIsExceeded() {
-        when(roomRepository.countByHotelId(hotel.getId())).thenReturn(10);
-        LimitExceededException exception = assertThrows(LimitExceededException.class,
-                () -> roomService.validateRoomCountForHotel(hotel));
-        assertEquals("Room can't be added to hotel. Max room count reached for hotel.", exception.getMessage());
-    }
-
-    @Test
-    void Should_ThrowHillTopHotelApplicationException_When_FailedToGetRoomCountForHotel() {
-        when(roomRepository.countByHotelId(hotel.getId())).thenThrow(new DataAccessException(FAILED) {
-        });
-        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
-                () -> roomService.validateRoomCountForHotel(hotel));
-        assertEquals("Failed to count rooms from database.", exception.getMessage());
     }
 
     /**
@@ -97,8 +74,8 @@ class RoomServiceTest {
     void Should_updateRoomDetailOnDatabase_When_ValidDataIsGiven() {
         when(roomRepository.findById(anyString())).thenReturn(Optional.of(room));
         when(hotelService.getHotelById(anyString())).thenReturn(hotel);
-        when(roomTypeRepository.findById(anyString())).thenReturn(Optional.of(roomType));
-        roomService.updateRoom(roomRequestDto);
+        when(roomTypeService.getRoomTypeById(anyString())).thenReturn(roomType);
+        roomService.updateRoom(updateRoomRequestDto);
         verify(roomRepository, times(1)).save(any());
     }
 
@@ -108,7 +85,7 @@ class RoomServiceTest {
         when(hotelService.getHotelById(anyString())).thenThrow(new DataAccessException(FAILED) {
         });
         HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
-                () -> roomService.updateRoom(roomRequestDto));
+                () -> roomService.updateRoom(updateRoomRequestDto));
         assertEquals("Failed to update room info in database.", exception.getMessage());
     }
 
@@ -168,48 +145,18 @@ class RoomServiceTest {
     }
 
     /**
-     * Unit tests for addRoomType() method.
-     */
-    @Test
-    void Should_SaveRoomTypeDetailOnDatabase_When_ValidDataIsGiven() {
-        roomService.addRoomType(roomTypeRequestDto);
-        verify(roomTypeRepository, times(1)).save(any());
-    }
-
-    @Test
-    void Should_ThrowHillTopHotelApplicationException_When_FailedToAddRoomTypeData() {
-        when(roomTypeRepository.save(any())).thenThrow(new DataAccessException(FAILED) {
-        });
-        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
-                () -> roomService.addRoomType(roomTypeRequestDto));
-        assertEquals("Failed to save room type on database.", exception.getMessage());
-    }
-
-    /**
-     * Unit tests for getRoomTypeById() method.
-     */
-    @Test
-    void Should_ThrowHillTopHotelApplicationException_When_FailedToGetRoomTypeById() {
-        when(roomTypeRepository.findById(any())).thenThrow(new DataAccessException(FAILED) {
-        });
-        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
-                () -> roomService.getRoomTypeById("rtid-123"));
-        assertEquals("Failed to get room type from database.", exception.getMessage());
-    }
-
-    /**
      * This method is used to mock roomRequestDto.
      *
-     * @return roomRequestDto
+     * @return updateRoomRequestDto
      */
-    private RoomRequestDto getRoomRequestDto() {
-        RoomRequestDto roomRequestDto = new RoomRequestDto();
-        roomRequestDto.setId(ROOM_ID);
-        roomRequestDto.setRoomNo("R1");
-        roomRequestDto.setHotelId("hid-123");
-        roomRequestDto.setRoomTypeId("rtid-123");
-        roomRequestDto.setMaxPeople(5);
-        return roomRequestDto;
+    private UpdateRoomRequestDto getUpdateRoomRequestDto() {
+        UpdateRoomRequestDto updateRoomRequestDto = new UpdateRoomRequestDto();
+        updateRoomRequestDto.setId(ROOM_ID);
+        updateRoomRequestDto.setRoomNo("R1");
+        updateRoomRequestDto.setHotelId("hid-123");
+        updateRoomRequestDto.setRoomTypeId("rtid-123");
+        updateRoomRequestDto.setMaxPeople(5);
+        return updateRoomRequestDto;
     }
 
     /**
@@ -233,7 +180,6 @@ class RoomServiceTest {
         Hotel hotel = new Hotel();
         hotel.setName("Hotel");
         hotel.setLocation("Colombo");
-        hotel.setRoomCount(10);
         return hotel;
     }
 

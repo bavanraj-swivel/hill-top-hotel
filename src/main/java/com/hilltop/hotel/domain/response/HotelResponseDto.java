@@ -12,12 +12,10 @@ public class HotelResponseDto implements ResponseDto {
     private final String id;
     private final String name;
     private final String location;
-    private final int roomCount;
 
     public HotelResponseDto(Hotel hotel) {
         this.id = hotel.getId();
         this.name = hotel.getName();
         this.location = hotel.getLocation();
-        this.roomCount = hotel.getRoomCount();
     }
 }

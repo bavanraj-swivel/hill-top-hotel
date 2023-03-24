@@ -1,7 +1,7 @@
 package com.hilltop.hotel.service;
 
 import com.hilltop.hotel.domain.entity.Hotel;
-import com.hilltop.hotel.domain.request.HotelRequestDto;
+import com.hilltop.hotel.domain.request.UpdateHotelRequestDto;
 import com.hilltop.hotel.exception.HillTopHotelApplicationException;
 import com.hilltop.hotel.repository.HotelRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,8 +25,8 @@ class HotelServiceTest {
 
     private static final String ALL = "ALL";
     private static final String FAILED = "Failed.";
-    private final HotelRequestDto hotelRequestDto = getHotelRequestDto();
-    private final Hotel hotel = new Hotel(getHotelRequestDto());
+    private final UpdateHotelRequestDto updateHotelRequestDto = getUpdateHotelRequestDto();
+    private final Hotel hotel = new Hotel(getUpdateHotelRequestDto());
     @Mock
     private HotelRepository hotelRepository;
     private HotelService hotelService;
@@ -42,7 +42,7 @@ class HotelServiceTest {
      */
     @Test
     void Should_SaveHotelDetailOnDatabase_When_ValidDataIsGiven() {
-        hotelService.addHotel(hotelRequestDto);
+        hotelService.addHotel(updateHotelRequestDto);
         verify(hotelRepository, times(1)).save(any());
     }
 
@@ -51,7 +51,7 @@ class HotelServiceTest {
         when(hotelRepository.save(any())).thenThrow(new DataAccessException(FAILED) {
         });
         HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
-                () -> hotelService.addHotel(hotelRequestDto));
+                () -> hotelService.addHotel(updateHotelRequestDto));
         assertEquals("Failed to save hotel info in database.", exception.getMessage());
     }
 
@@ -61,7 +61,7 @@ class HotelServiceTest {
     @Test
     void Should_UpdateHotelDetailOnDatabase_When_ValidDataIsGiven() {
         when(hotelRepository.findById(any())).thenReturn(Optional.of(hotel));
-        hotelService.updateHotel(hotelRequestDto);
+        hotelService.updateHotel(updateHotelRequestDto);
         verify(hotelRepository, times(1)).save(any());
     }
 
@@ -71,7 +71,7 @@ class HotelServiceTest {
         when(hotelRepository.save(any())).thenThrow(new DataAccessException(FAILED) {
         });
         HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
-                () -> hotelService.updateHotel(hotelRequestDto));
+                () -> hotelService.updateHotel(updateHotelRequestDto));
         assertEquals("Failed to update hotel info in database.", exception.getMessage());
     }
 
@@ -114,14 +114,13 @@ class HotelServiceTest {
     /**
      * This method is used to mock hotelRequestDto.
      *
-     * @return hotelRequestDto
+     * @return updateHotelRequestDto
      */
-    private HotelRequestDto getHotelRequestDto() {
-        HotelRequestDto hotelRequestDto = new HotelRequestDto();
-        hotelRequestDto.setName("Hotel");
-        hotelRequestDto.setLocation("Colombo");
-        hotelRequestDto.setRoomCount(10);
-        return hotelRequestDto;
+    private UpdateHotelRequestDto getUpdateHotelRequestDto() {
+        UpdateHotelRequestDto updateHotelRequestDto = new UpdateHotelRequestDto();
+        updateHotelRequestDto.setName("Hotel");
+        updateHotelRequestDto.setLocation("Colombo");
+        return updateHotelRequestDto;
     }
 
 }

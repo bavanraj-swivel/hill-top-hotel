@@ -1,9 +1,10 @@
 package com.hilltop.hotel.controller;
 
 import com.hilltop.hotel.domain.request.HotelRequestDto;
+import com.hilltop.hotel.domain.request.UpdateHotelRequestDto;
 import com.hilltop.hotel.enumeration.ErrorMessage;
 import com.hilltop.hotel.enumeration.SuccessMessage;
-import com.hilltop.hotel.exception.DataNotFoundExceptionHotel;
+import com.hilltop.hotel.exception.DataNotFoundException;
 import com.hilltop.hotel.exception.HillTopHotelApplicationException;
 import com.hilltop.hotel.service.HotelService;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,10 +29,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class HotelControllerTest {
 
     private static final String FAILED = "Failed.";
-    private final String ADD_HOTEL_URI = "/api/hotel";
-    private final String UPDATE_HOTEL_URI = "/api/hotel";
-    private final String LIST_ALL_HOTEL_URI = "/api/hotel/search/ALL";
-    private final HotelRequestDto hotelRequestDto = getHotelRequestDto();
+    private final String ADD_HOTEL_URI = "/api/v1/hotel";
+    private final String UPDATE_HOTEL_URI = "/api/v1/hotel";
+    private final String LIST_ALL_HOTEL_URI = "/api/v1/hotel/search/ALL";
+    private final UpdateHotelRequestDto updateHotelRequestDto = getUpdateHotelRequestDto();
     @Mock
     private HotelService hotelService;
     private MockMvc mockMvc;
@@ -49,15 +50,15 @@ class HotelControllerTest {
     @Test
     void Should_ReturnOk_When_AddHotelIsSuccessful() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post(ADD_HOTEL_URI)
-                        .content(hotelRequestDto.toLogJson())
+                        .content(updateHotelRequestDto.toLogJson())
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.message").value(SuccessMessage.SUCCESSFULLY_ADDED.getMessage()));
     }
 
     @Test
     void Should_ReturnBadRequest_When_MissingRequiredFields() throws Exception {
-        HotelRequestDto requestDto = hotelRequestDto;
+        HotelRequestDto requestDto = updateHotelRequestDto;
         requestDto.setName(null);
         mockMvc.perform(MockMvcRequestBuilders.post(ADD_HOTEL_URI)
                         .content(requestDto.toLogJson())
@@ -72,7 +73,7 @@ class HotelControllerTest {
         doThrow(new HillTopHotelApplicationException(FAILED))
                 .when(hotelService).addHotel(any());
         mockMvc.perform(MockMvcRequestBuilders.post(ADD_HOTEL_URI)
-                        .content(hotelRequestDto.toLogJson())
+                        .content(updateHotelRequestDto.toLogJson())
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.message").value(ErrorMessage.INTERNAL_SERVER_ERROR.getMessage()))
@@ -85,7 +86,7 @@ class HotelControllerTest {
     @Test
     void Should_ReturnOk_When_UpdateHotelIsSuccessful() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.put(UPDATE_HOTEL_URI)
-                        .content(hotelRequestDto.toLogJson())
+                        .content(updateHotelRequestDto.toLogJson())
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value(SuccessMessage.SUCCESSFULLY_UPDATED.getMessage()))
@@ -94,7 +95,7 @@ class HotelControllerTest {
 
     @Test
     void Should_ReturnBadRequest_When_UpdateHotelFieldsAreMissing() throws Exception {
-        HotelRequestDto requestDto = hotelRequestDto;
+        HotelRequestDto requestDto = updateHotelRequestDto;
         requestDto.setName(null);
         mockMvc.perform(MockMvcRequestBuilders.put(UPDATE_HOTEL_URI)
                         .content(requestDto.toLogJson())
@@ -109,7 +110,7 @@ class HotelControllerTest {
         doThrow(new HillTopHotelApplicationException(FAILED))
                 .when(hotelService).updateHotel(any());
         mockMvc.perform(MockMvcRequestBuilders.put(UPDATE_HOTEL_URI)
-                        .content(hotelRequestDto.toLogJson())
+                        .content(updateHotelRequestDto.toLogJson())
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.message").value(ErrorMessage.INTERNAL_SERVER_ERROR.getMessage()))
@@ -118,10 +119,10 @@ class HotelControllerTest {
 
     @Test
     void Should_ReturnDataNotFoundResponse_When_UpdateHotelIsFailed() throws Exception {
-        doThrow(new DataNotFoundExceptionHotel(FAILED))
+        doThrow(new DataNotFoundException(FAILED))
                 .when(hotelService).updateHotel(any());
         mockMvc.perform(MockMvcRequestBuilders.put(UPDATE_HOTEL_URI)
-                        .content(hotelRequestDto.toLogJson())
+                        .content(updateHotelRequestDto.toLogJson())
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(ErrorMessage.DATA_NOT_FOUND.getMessage()))
@@ -153,15 +154,14 @@ class HotelControllerTest {
     /**
      * This method is used to mock hotelRequestDto.
      *
-     * @return hotelRequestDto
+     * @return updateHotelRequestDto
      */
-    private HotelRequestDto getHotelRequestDto() {
-        HotelRequestDto hotelRequestDto = new HotelRequestDto();
-        hotelRequestDto.setId("hid-123");
-        hotelRequestDto.setName("Hotel");
-        hotelRequestDto.setLocation("Colombo");
-        hotelRequestDto.setRoomCount(10);
-        return hotelRequestDto;
+    private UpdateHotelRequestDto getUpdateHotelRequestDto() {
+        UpdateHotelRequestDto updateHotelRequestDto = new UpdateHotelRequestDto();
+        updateHotelRequestDto.setId("hid-123");
+        updateHotelRequestDto.setName("Hotel");
+        updateHotelRequestDto.setLocation("Colombo");
+        return updateHotelRequestDto;
     }
 
 

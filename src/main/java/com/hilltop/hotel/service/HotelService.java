@@ -2,7 +2,8 @@ package com.hilltop.hotel.service;
 
 import com.hilltop.hotel.domain.entity.Hotel;
 import com.hilltop.hotel.domain.request.HotelRequestDto;
-import com.hilltop.hotel.exception.DataNotFoundExceptionHotel;
+import com.hilltop.hotel.domain.request.UpdateHotelRequestDto;
+import com.hilltop.hotel.exception.DataNotFoundException;
 import com.hilltop.hotel.exception.HillTopHotelApplicationException;
 import com.hilltop.hotel.repository.HotelRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -41,12 +42,12 @@ public class HotelService {
     /**
      * This method is used to update hotel detail.
      *
-     * @param hotelRequestDto hotelRequestDto
+     * @param updateHotelRequestDto updateHotelRequestDto
      */
-    public void updateHotel(HotelRequestDto hotelRequestDto) {
+    public void updateHotel(UpdateHotelRequestDto updateHotelRequestDto) {
         try {
-            Hotel hotel = getHotelById(hotelRequestDto.getId());
-            hotel.updateHotel(hotelRequestDto);
+            Hotel hotel = getHotelById(updateHotelRequestDto.getId());
+            hotel.updateHotel(updateHotelRequestDto);
             hotelRepository.save(hotel);
             log.debug("Successfully updated hotel data.");
         } catch (DataAccessException e) {
@@ -62,7 +63,7 @@ public class HotelService {
      */
     public List<Hotel> getHotelList(String searchTerm) {
         try {
-            if (searchTerm.equals("ALL"))
+            if (searchTerm == null)
                 return hotelRepository.findAll();
             return hotelRepository.findByNameContaining(searchTerm);
         } catch (DataAccessException e) {
@@ -79,7 +80,7 @@ public class HotelService {
     public Hotel getHotelById(String id) {
         try {
             return hotelRepository.findById(id)
-                    .orElseThrow(() -> new DataNotFoundExceptionHotel("Hotel not found for id: " + id));
+                    .orElseThrow(() -> new DataNotFoundException("Hotel not found for id: " + id));
         } catch (DataAccessException e) {
             throw new HillTopHotelApplicationException("Failed to get hotel info from database.", e);
         }

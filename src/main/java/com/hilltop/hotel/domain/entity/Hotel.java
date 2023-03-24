@@ -26,15 +26,12 @@ public class Hotel {
     private String id;
     private String name;
     private String location;
-    private int roomCount;
     @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
     private Set<Room> rooms;
 
     public Hotel(HotelRequestDto hotelRequestDto) {
         this.id = HOTEL_ID_PREFIX + UUID.randomUUID();
-        this.name = hotelRequestDto.getName();
-        this.location = hotelRequestDto.getLocation();
-        this.roomCount = hotelRequestDto.getRoomCount();
+        updateHotel(hotelRequestDto);
     }
 
     /**
@@ -45,6 +42,5 @@ public class Hotel {
     public void updateHotel(HotelRequestDto hotelRequestDto) {
         this.name = hotelRequestDto.getName();
         this.location = hotelRequestDto.getLocation();
-        this.roomCount = hotelRequestDto.getRoomCount();
     }
 }

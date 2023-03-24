@@ -4,11 +4,11 @@ import com.hilltop.hotel.domain.entity.Room;
 import com.hilltop.hotel.domain.entity.RoomType;
 import com.hilltop.hotel.domain.request.RoomRequestDto;
 import com.hilltop.hotel.domain.request.RoomTypeRequestDto;
+import com.hilltop.hotel.domain.request.UpdateRoomRequestDto;
 import com.hilltop.hotel.enumeration.ErrorMessage;
 import com.hilltop.hotel.enumeration.SuccessMessage;
-import com.hilltop.hotel.exception.DataNotFoundExceptionHotel;
+import com.hilltop.hotel.exception.DataNotFoundException;
 import com.hilltop.hotel.exception.HillTopHotelApplicationException;
-import com.hilltop.hotel.exception.LimitExceededException;
 import com.hilltop.hotel.service.RoomService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,13 +35,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class RoomControllerTest {
 
     private static final String FAILED = "Failed.";
-    private final String ADD_ROOM_URI = "/api/room";
-    private final String UPDATE_ROOM_URI = "/api/room";
-    private final String DELETE_ROOM_URI = "/api/room/ID";
-    private final String LIST_ROOM_URI = "/api/room/hotel/ID/search/ALL";
-    private final String ADD_ROOM_TYPE_URI = "/api/room/type";
-    private final RoomRequestDto roomRequestDto = getRoomRequestDto();
-    private final RoomTypeRequestDto roomTypeRequestDto = getRoomTypeRequestDto();
+    private final String ADD_ROOM_URI = "/api/v1/room";
+    private final String UPDATE_ROOM_URI = "/api/v1/room";
+    private final String DELETE_ROOM_URI = "/api/v1/room/ID";
+    private final String LIST_ROOM_URI = "/api/v1/room/hotel/ID/search/ALL";
+    private final UpdateRoomRequestDto updateRoomRequestDto = getUpdateRoomRequestDto();
     private final RoomType roomType = new RoomType(getRoomTypeRequestDto());
     private final Room room = getRoom();
     @Mock
@@ -61,15 +59,15 @@ class RoomControllerTest {
     @Test
     void Should_ReturnOk_When_AddRoomIsSuccessful() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post(ADD_ROOM_URI)
-                        .content(roomRequestDto.toLogJson())
+                        .content(updateRoomRequestDto.toLogJson())
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.message").value(SuccessMessage.SUCCESSFULLY_ADDED.getMessage()));
     }
 
     @Test
     void Should_ReturnBadRequest_When_MissingRequiredFields() throws Exception {
-        RoomRequestDto requestDto = roomRequestDto;
+        RoomRequestDto requestDto = updateRoomRequestDto;
         requestDto.setHotelId(null);
         mockMvc.perform(MockMvcRequestBuilders.post(ADD_ROOM_URI)
                         .content(requestDto.toLogJson())
@@ -80,23 +78,11 @@ class RoomControllerTest {
     }
 
     @Test
-    void Should_ReturnRoomLimitExceededResponse_When_RoomLimitForHotelIsReached() throws Exception {
-        doThrow(new LimitExceededException(FAILED))
-                .when(roomService).addRoom(any());
-        mockMvc.perform(MockMvcRequestBuilders.post(ADD_ROOM_URI)
-                        .content(roomRequestDto.toLogJson())
-                        .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value(ErrorMessage.ROOM_LIMIT_REACHED.getMessage()))
-                .andExpect(jsonPath("$.data").isEmpty());
-    }
-
-    @Test
     void Should_ReturnDataNotFoundResponse_When_AddingRoomIsFailed() throws Exception {
-        doThrow(new DataNotFoundExceptionHotel(FAILED))
+        doThrow(new DataNotFoundException(FAILED))
                 .when(roomService).addRoom(any());
         mockMvc.perform(MockMvcRequestBuilders.post(ADD_ROOM_URI)
-                        .content(roomRequestDto.toLogJson())
+                        .content(updateRoomRequestDto.toLogJson())
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(ErrorMessage.DATA_NOT_FOUND.getMessage()))
@@ -108,7 +94,7 @@ class RoomControllerTest {
         doThrow(new HillTopHotelApplicationException(FAILED))
                 .when(roomService).addRoom(any());
         mockMvc.perform(MockMvcRequestBuilders.post(ADD_ROOM_URI)
-                        .content(roomRequestDto.toLogJson())
+                        .content(updateRoomRequestDto.toLogJson())
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.message").value(ErrorMessage.INTERNAL_SERVER_ERROR.getMessage()))
@@ -121,7 +107,7 @@ class RoomControllerTest {
     @Test
     void Should_ReturnOk_When_UpdateRoomIsSuccessful() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.put(UPDATE_ROOM_URI)
-                        .content(roomRequestDto.toLogJson())
+                        .content(updateRoomRequestDto.toLogJson())
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value(SuccessMessage.SUCCESSFULLY_UPDATED.getMessage()))
@@ -130,7 +116,7 @@ class RoomControllerTest {
 
     @Test
     void Should_ReturnBadRequest_When_UpdateRoomFieldsAreMissing() throws Exception {
-        RoomRequestDto requestDto = roomRequestDto;
+        RoomRequestDto requestDto = updateRoomRequestDto;
         requestDto.setHotelId(null);
         mockMvc.perform(MockMvcRequestBuilders.put(UPDATE_ROOM_URI)
                         .content(requestDto.toLogJson())
@@ -141,23 +127,11 @@ class RoomControllerTest {
     }
 
     @Test
-    void Should_ReturnRoomLimitExceededResponse_When_RoomLimitForHotelIsReachedOnUpdate() throws Exception {
-        doThrow(new LimitExceededException(FAILED))
-                .when(roomService).updateRoom(any());
-        mockMvc.perform(MockMvcRequestBuilders.put(UPDATE_ROOM_URI)
-                        .content(roomRequestDto.toLogJson())
-                        .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value(ErrorMessage.ROOM_LIMIT_REACHED.getMessage()))
-                .andExpect(jsonPath("$.data").isEmpty());
-    }
-
-    @Test
     void Should_ReturnInternalServerError_When_UpdateRoomFailedDueToInternalErrors() throws Exception {
         doThrow(new HillTopHotelApplicationException(FAILED))
                 .when(roomService).updateRoom(any());
         mockMvc.perform(MockMvcRequestBuilders.put(UPDATE_ROOM_URI)
-                        .content(roomRequestDto.toLogJson())
+                        .content(updateRoomRequestDto.toLogJson())
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.message").value(ErrorMessage.INTERNAL_SERVER_ERROR.getMessage()))
@@ -166,10 +140,10 @@ class RoomControllerTest {
 
     @Test
     void Should_ReturnDataNotFoundResponse_When_UpdateHotelIsFailed() throws Exception {
-        doThrow(new DataNotFoundExceptionHotel(FAILED))
+        doThrow(new DataNotFoundException(FAILED))
                 .when(roomService).updateRoom(any());
         mockMvc.perform(MockMvcRequestBuilders.put(UPDATE_ROOM_URI)
-                        .content(roomRequestDto.toLogJson())
+                        .content(updateRoomRequestDto.toLogJson())
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(ErrorMessage.DATA_NOT_FOUND.getMessage()))
@@ -223,55 +197,18 @@ class RoomControllerTest {
     }
 
     /**
-     * Unit tests for addRoomType() method.
-     */
-    @Test
-    void Should_ReturnOk_When_AddRoomTypeIsSuccessful() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post(ADD_ROOM_TYPE_URI)
-                        .content(roomTypeRequestDto.toLogJson())
-                        .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value(SuccessMessage.SUCCESSFULLY_ADDED.getMessage()));
-    }
-
-    @Test
-    void Should_ReturnBadRequest_When_AddRoomTypeHasMissingRequiredFields() throws Exception {
-        RoomTypeRequestDto requestDto = roomTypeRequestDto;
-        requestDto.setName(null);
-        mockMvc.perform(MockMvcRequestBuilders.post(ADD_ROOM_TYPE_URI)
-                        .content(requestDto.toLogJson())
-                        .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value(ErrorMessage.MISSING_REQUIRED_FIELDS.getMessage()))
-                .andExpect(jsonPath("$.data").isEmpty());
-    }
-
-    @Test
-    void Should_ReturnInternalServerError_When_AddingRoomTypeIsFailedDueToInternalErrors() throws Exception {
-        doThrow(new HillTopHotelApplicationException("Failed."))
-                .when(roomService).addRoomType(any());
-        mockMvc.perform(MockMvcRequestBuilders.post(ADD_ROOM_TYPE_URI)
-                        .content(roomTypeRequestDto.toLogJson())
-                        .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.message").value(ErrorMessage.INTERNAL_SERVER_ERROR.getMessage()))
-                .andExpect(jsonPath("$.data").isEmpty());
-    }
-
-
-    /**
      * This method is used to mock roomRequestDto.
      *
-     * @return roomRequestDto
+     * @return updateRoomRequestDto
      */
-    private RoomRequestDto getRoomRequestDto() {
-        RoomRequestDto roomRequestDto = new RoomRequestDto();
-        roomRequestDto.setId("rid-123");
-        roomRequestDto.setRoomNo("R1");
-        roomRequestDto.setHotelId("hid-123");
-        roomRequestDto.setRoomTypeId("rtid-123");
-        roomRequestDto.setMaxPeople(5);
-        return roomRequestDto;
+    private UpdateRoomRequestDto getUpdateRoomRequestDto() {
+        UpdateRoomRequestDto updateRoomRequestDto = new UpdateRoomRequestDto();
+        updateRoomRequestDto.setId("rid-123");
+        updateRoomRequestDto.setRoomNo("R1");
+        updateRoomRequestDto.setHotelId("hid-123");
+        updateRoomRequestDto.setRoomTypeId("rtid-123");
+        updateRoomRequestDto.setMaxPeople(5);
+        return updateRoomRequestDto;
     }
 
     /**

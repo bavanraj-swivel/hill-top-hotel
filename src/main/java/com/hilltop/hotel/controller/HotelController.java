@@ -1,14 +1,16 @@
 package com.hilltop.hotel.controller;
 
 import com.hilltop.hotel.domain.request.HotelRequestDto;
+import com.hilltop.hotel.domain.request.UpdateHotelRequestDto;
 import com.hilltop.hotel.domain.response.HotelListResponseDto;
 import com.hilltop.hotel.domain.response.ResponseWrapper;
 import com.hilltop.hotel.enumeration.ErrorMessage;
 import com.hilltop.hotel.enumeration.SuccessMessage;
-import com.hilltop.hotel.exception.DataNotFoundExceptionHotel;
+import com.hilltop.hotel.exception.DataNotFoundException;
 import com.hilltop.hotel.exception.HillTopHotelApplicationException;
 import com.hilltop.hotel.service.HotelService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @Slf4j
-@RequestMapping("/api/hotel")
+@RequestMapping("/api/v1/hotel")
 public class HotelController extends BaseController {
 
     private final HotelService hotelService;
@@ -40,7 +42,7 @@ public class HotelController extends BaseController {
                 return getBadRequestErrorResponse(ErrorMessage.MISSING_REQUIRED_FIELDS);
             }
             hotelService.addHotel(hotelRequestDto);
-            return getSuccessResponse(SuccessMessage.SUCCESSFULLY_ADDED, null);
+            return getSuccessResponse(SuccessMessage.SUCCESSFULLY_ADDED, null, HttpStatus.CREATED);
         } catch (HillTopHotelApplicationException e) {
             log.error("Failed to add hotel. ", e);
             return getInternalServerError();
@@ -50,19 +52,19 @@ public class HotelController extends BaseController {
     /**
      * This method is used to update hotel.
      *
-     * @param hotelRequestDto hotelRequestDto
+     * @param updateHotelRequestDto updateHotelRequestDto
      * @return success/error response.
      */
     @PutMapping("")
-    public ResponseEntity<ResponseWrapper> updateHotel(@RequestBody HotelRequestDto hotelRequestDto) {
+    public ResponseEntity<ResponseWrapper> updateHotel(@RequestBody UpdateHotelRequestDto updateHotelRequestDto) {
         try {
-            if (!hotelRequestDto.isRequiredFieldsAvailableForUpdate()) {
-                log.debug("Required fields missing. data: {}", hotelRequestDto.toLogJson());
+            if (!updateHotelRequestDto.isRequiredFieldsAvailableForUpdate()) {
+                log.debug("Required fields missing. data: {}", updateHotelRequestDto.toLogJson());
                 return getBadRequestErrorResponse(ErrorMessage.MISSING_REQUIRED_FIELDS);
             }
-            hotelService.updateHotel(hotelRequestDto);
-            return getSuccessResponse(SuccessMessage.SUCCESSFULLY_UPDATED, null);
-        } catch (DataNotFoundExceptionHotel e) {
+            hotelService.updateHotel(updateHotelRequestDto);
+            return getSuccessResponse(SuccessMessage.SUCCESSFULLY_UPDATED, null, HttpStatus.OK);
+        } catch (DataNotFoundException e) {
             log.error("Data not found.", e);
             return getBadRequestErrorResponse(ErrorMessage.DATA_NOT_FOUND);
         } catch (HillTopHotelApplicationException e) {
@@ -74,15 +76,16 @@ public class HotelController extends BaseController {
     /**
      * This method is used to get all hotels.
      *
+     * @param searchTerm search term
      * @return hotel list.
      */
-    @GetMapping("/search/{searchTerm}")
-    public ResponseEntity<ResponseWrapper> listAllHotels(@PathVariable String searchTerm) {
+    @GetMapping("/list")
+    public ResponseEntity<ResponseWrapper> listAllHotels(@RequestParam(required = false) String searchTerm) {
         try {
             HotelListResponseDto hotelListResponseDto =
                     new HotelListResponseDto(hotelService.getHotelList(searchTerm));
             log.debug("Successfully returned all hotels.");
-            return getSuccessResponse(SuccessMessage.SUCCESSFULLY_RETURNED, hotelListResponseDto);
+            return getSuccessResponse(SuccessMessage.SUCCESSFULLY_RETURNED, hotelListResponseDto, HttpStatus.OK);
         } catch (HillTopHotelApplicationException e) {
             log.error("Failed to list all hotel data.", e);
             return getInternalServerError();
