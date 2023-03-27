@@ -26,7 +26,7 @@ public class Hotel {
     private String id;
     private String name;
     private String location;
-    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "hotel", fetch = FetchType.EAGER)
     private Set<Room> rooms;
 
     public Hotel(HotelRequestDto hotelRequestDto) {

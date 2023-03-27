@@ -27,7 +27,6 @@ import static org.mockito.MockitoAnnotations.openMocks;
 class RoomServiceTest {
 
     private static final String ROOM_ID = "rid-123";
-    private static final String ALL = "ALL";
     private static final String FAILED = "Failed.";
     private final UpdateRoomRequestDto updateRoomRequestDto = getUpdateRoomRequestDto();
     private final Room room = getRoom();
@@ -112,7 +111,7 @@ class RoomServiceTest {
      */
     @Test
     void Should_RunFindByHotelIdQuery_When_GetRoomListByHotelIdIsCalled() {
-        roomService.getRoomListByHotelIdAndSearchTerm(anyString(), ALL);
+        roomService.getRoomListByHotelIdAndSearchTerm(anyString(), null);
         verify(roomRepository, times(1)).findAllByHotelId(anyString());
     }
 
@@ -128,7 +127,7 @@ class RoomServiceTest {
         when(roomRepository.findAllByHotelId(anyString())).thenThrow(new DataAccessException(FAILED) {
         });
         HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
-                () -> roomService.getRoomListByHotelIdAndSearchTerm("hid-123", ALL));
+                () -> roomService.getRoomListByHotelIdAndSearchTerm("hid-123", null));
         assertEquals("Failed to get all room data from database.", exception.getMessage());
     }
 
@@ -191,8 +190,7 @@ class RoomServiceTest {
     private RoomTypeRequestDto getRoomTypeRequestDto() {
         RoomTypeRequestDto roomTypeRequestDto = new RoomTypeRequestDto();
         roomTypeRequestDto.setName("Gold");
-        roomTypeRequestDto.setBaseAmount(1000);
-        roomTypeRequestDto.setAmountPerPerson(100);
+        roomTypeRequestDto.setMarkupPercentage(5);
         return roomTypeRequestDto;
     }
 

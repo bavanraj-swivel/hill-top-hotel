@@ -17,4 +17,12 @@ public interface HotelRepository extends JpaRepository<Hotel, String> {
      * @return hotel list.
      */
     List<Hotel> findByNameContaining(String name);
+
+    /**
+     * This method is used to find hotels by location.
+     *
+     * @param location location
+     * @return hotel list.
+     */
+    List<Hotel> findByLocation(String location);
 }

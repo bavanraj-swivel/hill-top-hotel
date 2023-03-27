@@ -1,5 +1,7 @@
 package com.hilltop.hotel.controller;
 
+import com.hilltop.hotel.domain.entity.Hotel;
+import com.hilltop.hotel.domain.entity.Room;
 import com.hilltop.hotel.domain.request.HotelRequestDto;
 import com.hilltop.hotel.domain.request.UpdateHotelRequestDto;
 import com.hilltop.hotel.domain.response.HotelListResponseDto;
@@ -13,6 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Hotel controller
@@ -84,6 +89,27 @@ public class HotelController extends BaseController {
         try {
             HotelListResponseDto hotelListResponseDto =
                     new HotelListResponseDto(hotelService.getHotelList(searchTerm));
+            log.debug("Successfully returned all hotels.");
+            return getSuccessResponse(SuccessMessage.SUCCESSFULLY_RETURNED, hotelListResponseDto, HttpStatus.OK);
+        } catch (HillTopHotelApplicationException e) {
+            log.error("Failed to list all hotel data.", e);
+            return getInternalServerError();
+        }
+    }
+
+    /**
+     * This method is used to search hotels by location and pax count.
+     *
+     * @param location hotel location
+     * @param paxCount paxCount
+     * @return hotel list.
+     */
+    @GetMapping("/list-by-location-and-pax")
+    public ResponseEntity<ResponseWrapper> searchHotelsByLocationAndPaxCount(@RequestParam String location,
+                                                                             @RequestParam int paxCount) {
+        try {
+            Map<Hotel, List<Room>> hotelAndRoomsMap = hotelService.getHotelsByLocationAndPaxCount(location, paxCount);
+            HotelListResponseDto hotelListResponseDto = new HotelListResponseDto(hotelAndRoomsMap);
             log.debug("Successfully returned all hotels.");
             return getSuccessResponse(SuccessMessage.SUCCESSFULLY_RETURNED, hotelListResponseDto, HttpStatus.OK);
         } catch (HillTopHotelApplicationException e) {

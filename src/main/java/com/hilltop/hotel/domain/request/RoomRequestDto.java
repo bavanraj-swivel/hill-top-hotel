@@ -14,6 +14,7 @@ public class RoomRequestDto implements RequestDto {
     private String hotelId;
     private String roomTypeId;
     private int maxPeople;
+    private double cost;
 
     /**
      * Used to validate required fields.
@@ -22,6 +23,6 @@ public class RoomRequestDto implements RequestDto {
      */
     @Override
     public boolean isRequiredFieldsAvailable() {
-        return isNonEmpty(hotelId) && isNonEmpty(roomNo) && isNonEmpty(roomTypeId) && maxPeople > 0;
+        return isNonEmpty(hotelId) && isNonEmpty(roomNo) && isNonEmpty(roomTypeId) && maxPeople > 0 && cost > 0;
     }
 }

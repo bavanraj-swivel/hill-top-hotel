@@ -11,8 +11,7 @@ import lombok.Setter;
 public class RoomTypeRequestDto implements RequestDto {
 
     private String name;
-    private double baseAmount;
-    private double amountPerPerson;
+    private double markupPercentage;
 
     /**
      * Used to validate required fields.
@@ -21,6 +20,6 @@ public class RoomTypeRequestDto implements RequestDto {
      */
     @Override
     public boolean isRequiredFieldsAvailable() {
-        return isNonEmpty(name) && baseAmount > 0 && amountPerPerson > 0;
+        return isNonEmpty(name) && markupPercentage > 0;
     }
 }

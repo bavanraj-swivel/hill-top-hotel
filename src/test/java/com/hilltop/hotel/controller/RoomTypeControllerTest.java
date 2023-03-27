@@ -1,5 +1,6 @@
 package com.hilltop.hotel.controller;
 
+import com.hilltop.hotel.domain.entity.RoomType;
 import com.hilltop.hotel.domain.request.RoomTypeRequestDto;
 import com.hilltop.hotel.enumeration.ErrorMessage;
 import com.hilltop.hotel.enumeration.SuccessMessage;
@@ -15,6 +16,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,6 +45,7 @@ class RoomTypeControllerTest {
      */
     @Test
     void Should_ReturnOk_When_AddRoomTypeIsSuccessful() throws Exception {
+        when(roomTypeService.addRoomType(any())).thenReturn(getRoomType());
         mockMvc.perform(MockMvcRequestBuilders.post(ADD_ROOM_TYPE_URI)
                         .content(roomTypeRequestDto.toLogJson())
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
@@ -82,8 +85,20 @@ class RoomTypeControllerTest {
     private RoomTypeRequestDto getRoomTypeRequestDto() {
         RoomTypeRequestDto roomTypeRequestDto = new RoomTypeRequestDto();
         roomTypeRequestDto.setName("Gold");
-        roomTypeRequestDto.setBaseAmount(1000);
-        roomTypeRequestDto.setAmountPerPerson(100);
+        roomTypeRequestDto.setMarkupPercentage(5);
         return roomTypeRequestDto;
+    }
+
+    /**
+     * This method is used to mock room type.
+     *
+     * @return room type.
+     */
+    private RoomType getRoomType() {
+        RoomType roomType = new RoomType();
+        roomType.setId("rtid-123");
+        roomType.setName("GOLD");
+        roomType.setMarkupPercentage(5);
+        return roomType;
     }
 }

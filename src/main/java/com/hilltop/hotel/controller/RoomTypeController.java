@@ -1,7 +1,9 @@
 package com.hilltop.hotel.controller;
 
+import com.hilltop.hotel.domain.entity.RoomType;
 import com.hilltop.hotel.domain.request.RoomTypeRequestDto;
 import com.hilltop.hotel.domain.response.ResponseWrapper;
+import com.hilltop.hotel.domain.response.RoomTypeResponseDto;
 import com.hilltop.hotel.enumeration.ErrorMessage;
 import com.hilltop.hotel.enumeration.SuccessMessage;
 import com.hilltop.hotel.exception.HillTopHotelApplicationException;
@@ -38,9 +40,10 @@ public class RoomTypeController extends BaseController {
                 log.debug("Required fields missing. data: {}", roomTypeRequestDto.toLogJson());
                 return getBadRequestErrorResponse(ErrorMessage.MISSING_REQUIRED_FIELDS);
             }
-            roomTypeService.addRoomType(roomTypeRequestDto);
+            RoomType roomType = roomTypeService.addRoomType(roomTypeRequestDto);
             log.debug("Successfully added room type.");
-            return getSuccessResponse(SuccessMessage.SUCCESSFULLY_ADDED, null, HttpStatus.CREATED);
+            return getSuccessResponse(SuccessMessage.SUCCESSFULLY_ADDED,
+                    new RoomTypeResponseDto(roomType), HttpStatus.CREATED);
         } catch (HillTopHotelApplicationException e) {
             log.error("Failed to add room type. ", e);
             return getInternalServerError();

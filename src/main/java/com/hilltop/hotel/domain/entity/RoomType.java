@@ -27,13 +27,11 @@ public class RoomType {
     @Id
     private String id;
     private String name;
-    private double baseAmount;
-    private double amountPerPerson;
+    private double markupPercentage;
 
     public RoomType(RoomTypeRequestDto roomTypeRequestDto) {
         this.id = ROOM_TYPE_ID_PREFIX + UUID.randomUUID();
         this.name = roomTypeRequestDto.getName();
-        this.baseAmount = roomTypeRequestDto.getBaseAmount();
-        this.amountPerPerson = roomTypeRequestDto.getAmountPerPerson();
+        this.markupPercentage = roomTypeRequestDto.getMarkupPercentage();
     }
 }

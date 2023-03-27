@@ -27,11 +27,4 @@ public interface RoomRepository extends JpaRepository<Room, String> {
      */
     List<Room> findAllByHotelIdAndRoomNoContaining(String hotelId, String roomNo);
 
-    /**
-     * Used to count rooms by hotelId.
-     *
-     * @param hotelId hotelId
-     * @return room count.
-     */
-    int countByHotelId(String hotelId);
 }

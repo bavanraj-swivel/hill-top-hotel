@@ -1,6 +1,7 @@
 package com.hilltop.hotel.service;
 
 import com.hilltop.hotel.domain.entity.Hotel;
+import com.hilltop.hotel.domain.entity.Room;
 import com.hilltop.hotel.domain.request.UpdateHotelRequestDto;
 import com.hilltop.hotel.exception.HillTopHotelApplicationException;
 import com.hilltop.hotel.repository.HotelRepository;
@@ -9,7 +10,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.dao.DataAccessException;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -23,7 +27,6 @@ import static org.mockito.MockitoAnnotations.openMocks;
  */
 class HotelServiceTest {
 
-    private static final String ALL = "ALL";
     private static final String FAILED = "Failed.";
     private final UpdateHotelRequestDto updateHotelRequestDto = getUpdateHotelRequestDto();
     private final Hotel hotel = new Hotel(getUpdateHotelRequestDto());
@@ -80,7 +83,7 @@ class HotelServiceTest {
      */
     @Test
     void Should_RunFindAllQuery_When_GetHotelListIsCalled() {
-        hotelService.getHotelList(ALL);
+        hotelService.getHotelList(null);
         verify(hotelRepository, times(1)).findAll();
     }
 
@@ -92,10 +95,10 @@ class HotelServiceTest {
 
     @Test
     void Should_ThrowHillTopHotelApplicationException_When_FailedToGetHotelList() {
-        when(hotelRepository.findAll()).thenThrow(new DataAccessException(FAILED) {
+        when(hotelRepository.findByNameContaining(anyString())).thenThrow(new DataAccessException(FAILED) {
         });
         HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
-                () -> hotelService.getHotelList(ALL));
+                () -> hotelService.getHotelList("Hilton"));
         assertEquals("Failed to get all hotel data from database.", exception.getMessage());
     }
 
@@ -112,6 +115,25 @@ class HotelServiceTest {
     }
 
     /**
+     * Unit tests for getHotelsByLocationAndPaxCount() method.
+     */
+    @Test
+    void Should_ReturnHotelAndRoomMap_When_GetHotelsByLocationAndPaxCountIsCalled() {
+        when(hotelRepository.findByLocation(anyString())).thenReturn(List.of(getHotel()));
+        Map<Hotel, List<Room>> map = hotelService.getHotelsByLocationAndPaxCount(anyString(), 5);
+        assertEquals(1, map.size());
+    }
+
+    @Test
+    void Should_ThrowHillTopHotelApplicationException_When_FailedToGetHotelsByLocationAndPaxCount() {
+        when(hotelRepository.findByLocation(anyString())).thenThrow(new DataAccessException(FAILED) {
+        });
+        HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
+                () -> hotelService.getHotelsByLocationAndPaxCount("Colombo", 2));
+        assertEquals("Failed to get hotels from database.", exception.getMessage());
+    }
+
+    /**
      * This method is used to mock hotelRequestDto.
      *
      * @return updateHotelRequestDto
@@ -121,6 +143,31 @@ class HotelServiceTest {
         updateHotelRequestDto.setName("Hotel");
         updateHotelRequestDto.setLocation("Colombo");
         return updateHotelRequestDto;
+    }
+
+    /**
+     * This method is used to mock hotel.
+     *
+     * @return hotel
+     */
+    private Hotel getHotel() {
+        Hotel hotel = new Hotel();
+        hotel.setName("Hotel");
+        hotel.setLocation("Colombo");
+        hotel.setRooms(Set.of(getRoom()));
+        return hotel;
+    }
+
+    /**
+     * This method is used to mock room.
+     *
+     * @return room
+     */
+    private Room getRoom() {
+        Room room = new Room();
+        room.setRoomNo("R1");
+        room.setMaxPeople(5);
+        return room;
     }
 
 }

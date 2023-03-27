@@ -81,8 +81,7 @@ class RoomTypeServiceTest {
     private RoomTypeRequestDto getRoomTypeRequestDto() {
         RoomTypeRequestDto roomTypeRequestDto = new RoomTypeRequestDto();
         roomTypeRequestDto.setName("Gold");
-        roomTypeRequestDto.setBaseAmount(1000);
-        roomTypeRequestDto.setAmountPerPerson(100);
+        roomTypeRequestDto.setMarkupPercentage(5);
         return roomTypeRequestDto;
     }
 }

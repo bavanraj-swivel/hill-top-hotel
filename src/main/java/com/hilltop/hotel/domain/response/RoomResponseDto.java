@@ -13,13 +13,13 @@ public class RoomResponseDto implements ResponseDto {
     private final String roomNo;
     private final String roomType;
     private final int maxPeople;
-    private final double amount;
+    private final double price;
 
     public RoomResponseDto(Room room) {
         this.id = room.getId();
         this.roomNo = room.getRoomNo();
         this.roomType = room.getRoomType().getName();
         this.maxPeople = room.getMaxPeople();
-        this.amount = room.getAmount();
+        this.price = room.getPrice();
     }
 }

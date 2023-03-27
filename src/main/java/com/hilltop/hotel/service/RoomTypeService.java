@@ -26,11 +26,14 @@ public class RoomTypeService {
      * This method is used to add room type.
      *
      * @param roomTypeRequestDto roomTypeRequestDto
+     * @return roomType.
      */
-    public void addRoomType(RoomTypeRequestDto roomTypeRequestDto) {
+    public RoomType addRoomType(RoomTypeRequestDto roomTypeRequestDto) {
         try {
-            roomTypeRepository.save(new RoomType(roomTypeRequestDto));
+            RoomType roomType = new RoomType(roomTypeRequestDto);
+            roomTypeRepository.save(roomType);
             log.debug("Successfully added room type.");
+            return roomType;
         } catch (DataAccessException e) {
             throw new HillTopHotelApplicationException("Failed to save room type on database.", e);
         }

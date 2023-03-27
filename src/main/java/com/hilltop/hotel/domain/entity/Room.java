@@ -27,7 +27,8 @@ public class Room {
     @ManyToOne
     private RoomType roomType;
     private int maxPeople;
-    private double amount;
+    private double cost;
+    private double price;
     @ManyToOne
     @JoinColumn(nullable = false)
     private Hotel hotel;
@@ -48,18 +49,18 @@ public class Room {
         this.roomType = roomType;
         this.roomNo = roomRequestDto.getRoomNo();
         this.maxPeople = roomRequestDto.getMaxPeople();
-        this.amount = calculateRoomPrice(roomType, maxPeople);
+        this.cost = roomRequestDto.getCost();
         this.hotel = hotel;
+        this.price = calculateRoomPrice(roomType);
     }
 
     /**
      * This method is used to calculate room price.
      *
-     * @param roomType  roomType
-     * @param maxPeople maxPeople
+     * @param roomType roomType
      * @return room price.
      */
-    private double calculateRoomPrice(RoomType roomType, int maxPeople) {
-        return roomType.getBaseAmount() + roomType.getAmountPerPerson() * maxPeople;
+    private double calculateRoomPrice(RoomType roomType) {
+        return cost * (100 + roomType.getMarkupPercentage()) / 100;
     }
 }

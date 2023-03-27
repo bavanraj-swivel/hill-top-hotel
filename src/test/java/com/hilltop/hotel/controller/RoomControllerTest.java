@@ -38,7 +38,7 @@ class RoomControllerTest {
     private final String ADD_ROOM_URI = "/api/v1/room";
     private final String UPDATE_ROOM_URI = "/api/v1/room";
     private final String DELETE_ROOM_URI = "/api/v1/room/ID";
-    private final String LIST_ROOM_URI = "/api/v1/room/hotel/ID/search/ALL";
+    private final String LIST_ROOM_URI = "/api/v1/room/hotel/ID/list";
     private final UpdateRoomRequestDto updateRoomRequestDto = getUpdateRoomRequestDto();
     private final RoomType roomType = new RoomType(getRoomTypeRequestDto());
     private final Room room = getRoom();
@@ -188,7 +188,7 @@ class RoomControllerTest {
     @Test
     void Should_ReturnInternalServerError_When_ListAllRoomsByHotelIdIsFailedDueToInternalErrors() throws Exception {
         doThrow(new HillTopHotelApplicationException(FAILED))
-                .when(roomService).getRoomListByHotelIdAndSearchTerm(anyString(), anyString());
+                .when(roomService).getRoomListByHotelIdAndSearchTerm(anyString(), any());
         mockMvc.perform(MockMvcRequestBuilders.get(LIST_ROOM_URI)
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError())
@@ -208,6 +208,7 @@ class RoomControllerTest {
         updateRoomRequestDto.setHotelId("hid-123");
         updateRoomRequestDto.setRoomTypeId("rtid-123");
         updateRoomRequestDto.setMaxPeople(5);
+        updateRoomRequestDto.setCost(100);
         return updateRoomRequestDto;
     }
 
@@ -219,8 +220,7 @@ class RoomControllerTest {
     private RoomTypeRequestDto getRoomTypeRequestDto() {
         RoomTypeRequestDto roomTypeRequestDto = new RoomTypeRequestDto();
         roomTypeRequestDto.setName("Gold");
-        roomTypeRequestDto.setBaseAmount(1000);
-        roomTypeRequestDto.setAmountPerPerson(100);
+        roomTypeRequestDto.setMarkupPercentage(5);
         return roomTypeRequestDto;
     }
 
