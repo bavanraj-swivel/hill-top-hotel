@@ -117,11 +117,39 @@ class HotelServiceTest {
     /**
      * Unit tests for getHotelsByLocationAndPaxCount() method.
      */
+
     @Test
     void Should_ReturnHotelAndRoomMap_When_GetHotelsByLocationAndPaxCountIsCalled() {
-        when(hotelRepository.findByLocation(anyString())).thenReturn(List.of(getHotel()));
+        Room room1 = new Room();
+        room1.setRoomNo("R1");
+        room1.setMaxPeople(1);
+
+        Room room2 = new Room();
+        room2.setRoomNo("R12");
+        room2.setMaxPeople(2);
+
+        Hotel hotel1 = getHotel();
+        hotel1.setRooms(Set.of(room1, room2, getRoom()));
+        when(hotelRepository.findByLocation(anyString())).thenReturn(List.of(hotel1));
         Map<Hotel, List<Room>> map = hotelService.getHotelsByLocationAndPaxCount(anyString(), 5);
         assertEquals(1, map.size());
+    }
+
+    @Test
+    void Should_ReturnEmptyMap_When_NoPossibleCombinationIsFoundForGetHotelsByLocationAndPaxCount() {
+        Room room1 = new Room();
+        room1.setRoomNo("R1");
+        room1.setMaxPeople(1);
+
+        Room room2 = new Room();
+        room2.setRoomNo("R12");
+        room2.setMaxPeople(2);
+
+        Hotel hotel1 = getHotel();
+        hotel1.setRooms(Set.of(room1, room2, getRoom()));
+        when(hotelRepository.findByLocation(anyString())).thenReturn(List.of(hotel1));
+        Map<Hotel, List<Room>> map = hotelService.getHotelsByLocationAndPaxCount(anyString(), 10);
+        assertEquals(0, map.size());
     }
 
     @Test
@@ -166,7 +194,7 @@ class HotelServiceTest {
     private Room getRoom() {
         Room room = new Room();
         room.setRoomNo("R1");
-        room.setMaxPeople(5);
+        room.setMaxPeople(3);
         return room;
     }
 

@@ -11,9 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -104,6 +102,8 @@ public class HotelService {
             for (Hotel hotel : hotelList) {
                 List<Room> sortedRoomList = hotel.getRooms().stream()
                         .filter(room -> room.getMaxPeople() == paxCount).collect(Collectors.toList());
+                if (sortedRoomList.isEmpty())
+                    sortedRoomList = getPossibleRoomsForPaxCount(hotel.getRooms(), paxCount);
                 if (!sortedRoomList.isEmpty())
                     hotelAndRoomsMap.put(hotel, sortedRoomList);
             }
@@ -111,5 +111,58 @@ public class HotelService {
         } catch (DataAccessException e) {
             throw new HillTopHotelApplicationException("Failed to get hotels from database.", e);
         }
+    }
+
+    /**
+     * This method is used to get possible rooms for pax count.
+     * If pax count is 5 method will return rooms with pax count 6 and 7.
+     * Else method will return multiple rooms to fulfill pax count (e.g. two rooms with pax count 3 & 2 ).
+     *
+     * @param roomSet  roomSet
+     * @param paxCount paxCount
+     * @return list of rooms.
+     */
+    private List<Room> getPossibleRoomsForPaxCount(Set<Room> roomSet, int paxCount) {
+        List<Room> sortedRoomList = roomSet.stream()
+                .filter(room -> room.getMaxPeople() > paxCount && room.getMaxPeople() <= paxCount + 2)
+                .collect(Collectors.toList());
+        if (sortedRoomList.isEmpty()) {
+            Optional<Room> optionalRoom = roomSet.stream().filter(room -> room.getMaxPeople() < paxCount)
+                    .max(Comparator.comparing(Room::getMaxPeople));
+            if (optionalRoom.isPresent())
+                sortedRoomList = getRoomCombination(optionalRoom.get(), roomSet, paxCount);
+        }
+        return sortedRoomList;
+    }
+
+    /**
+     * This method is used to return multiple rooms to fulfill pax count.
+     * e.g. if required pax count is 5 method will return two rooms with pax count 3 & 2.
+     *
+     * @param possibleMaximumPaxRoom possibleMaximumPaxRoom
+     * @param roomSet                roomSet
+     * @param paxCount               paxCount
+     * @return list of rooms.
+     */
+    private List<Room> getRoomCombination(Room possibleMaximumPaxRoom, Set<Room> roomSet, int paxCount) {
+        List<Room> sortedRoomList = new ArrayList<>();
+        sortedRoomList.add(possibleMaximumPaxRoom);
+        int totalPaxCount = possibleMaximumPaxRoom.getMaxPeople();
+
+        List<Room> paxCountDecendingRoomList = roomSet.stream()
+                .sorted(Comparator.comparing(Room::getMaxPeople).reversed()).collect(Collectors.toList());
+        paxCountDecendingRoomList.remove(possibleMaximumPaxRoom);
+
+        for (Room room : paxCountDecendingRoomList) {
+            if (totalPaxCount + room.getMaxPeople() <= paxCount) {
+                sortedRoomList.add(room);
+                totalPaxCount += room.getMaxPeople();
+                if (totalPaxCount == paxCount)
+                    break;
+            }
+        }
+        if (totalPaxCount != paxCount)
+            return List.of();
+        return sortedRoomList;
     }
 }
