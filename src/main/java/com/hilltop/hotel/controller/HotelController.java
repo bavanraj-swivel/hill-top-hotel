@@ -79,37 +79,24 @@ public class HotelController extends BaseController {
     }
 
     /**
-     * This method is used to get all hotels.
-     *
-     * @param searchTerm search term
-     * @return hotel list.
-     */
-    @GetMapping("/list")
-    public ResponseEntity<ResponseWrapper> listAllHotels(@RequestParam(required = false) String searchTerm) {
-        try {
-            HotelListResponseDto hotelListResponseDto =
-                    new HotelListResponseDto(hotelService.getHotelList(searchTerm));
-            log.debug("Successfully returned all hotels.");
-            return getSuccessResponse(SuccessMessage.SUCCESSFULLY_RETURNED, hotelListResponseDto, HttpStatus.OK);
-        } catch (HillTopHotelApplicationException e) {
-            log.error("Failed to list all hotel data.", e);
-            return getInternalServerError();
-        }
-    }
-
-    /**
-     * This method is used to search hotels by location and pax count.
+     * This method is used to list hotels or to search hotels by location and pax count.
      *
      * @param location hotel location
      * @param paxCount paxCount
      * @return hotel list.
      */
-    @GetMapping("/list-by-location-and-pax")
-    public ResponseEntity<ResponseWrapper> searchHotelsByLocationAndPaxCount(@RequestParam String location,
-                                                                             @RequestParam int paxCount) {
+    @GetMapping("")
+    public ResponseEntity<ResponseWrapper> listOrSearchHotels(@RequestParam(required = false) String location,
+                                                              @RequestParam(required = false) Integer paxCount) {
         try {
-            Map<Hotel, List<Room>> hotelAndRoomsMap = hotelService.getHotelsByLocationAndPaxCount(location, paxCount);
-            HotelListResponseDto hotelListResponseDto = new HotelListResponseDto(hotelAndRoomsMap);
+            HotelListResponseDto hotelListResponseDto;
+            if (location == null || paxCount == null)
+                hotelListResponseDto = new HotelListResponseDto(hotelService.getHotelList());
+            else {
+                Map<Hotel, List<Room>> hotelAndRoomsMap =
+                        hotelService.getHotelsByLocationAndPaxCount(location, paxCount);
+                hotelListResponseDto = new HotelListResponseDto(hotelAndRoomsMap);
+            }
             log.debug("Successfully returned all hotels.");
             return getSuccessResponse(SuccessMessage.SUCCESSFULLY_RETURNED, hotelListResponseDto, HttpStatus.OK);
         } catch (HillTopHotelApplicationException e) {

@@ -83,22 +83,16 @@ class HotelServiceTest {
      */
     @Test
     void Should_RunFindAllQuery_When_GetHotelListIsCalled() {
-        hotelService.getHotelList(null);
+        hotelService.getHotelList();
         verify(hotelRepository, times(1)).findAll();
     }
 
     @Test
-    void Should_RunFindByNameQuery_When_GetHotelListIsCalledWithSearchTerm() {
-        hotelService.getHotelList(anyString());
-        verify(hotelRepository, times(1)).findByNameContaining(anyString());
-    }
-
-    @Test
     void Should_ThrowHillTopHotelApplicationException_When_FailedToGetHotelList() {
-        when(hotelRepository.findByNameContaining(anyString())).thenThrow(new DataAccessException(FAILED) {
+        when(hotelRepository.findAll()).thenThrow(new DataAccessException(FAILED) {
         });
         HillTopHotelApplicationException exception = assertThrows(HillTopHotelApplicationException.class,
-                () -> hotelService.getHotelList("Hilton"));
+                () -> hotelService.getHotelList());
         assertEquals("Failed to get all hotel data from database.", exception.getMessage());
     }
 

@@ -98,7 +98,7 @@ public class RoomController extends BaseController {
      * @param id hotelId
      * @return room list.
      */
-    @GetMapping("/hotel/{id}/list")
+    @GetMapping("/hotel/{id}")
     public ResponseEntity<ResponseWrapper> listAllRoomsByHotelId(@PathVariable String id,
                                                                  @RequestParam(required = false) String searchTerm) {
         try {

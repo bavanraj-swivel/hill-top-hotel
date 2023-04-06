@@ -38,7 +38,7 @@ class RoomControllerTest {
     private final String ADD_ROOM_URI = "/api/v1/room";
     private final String UPDATE_ROOM_URI = "/api/v1/room";
     private final String DELETE_ROOM_URI = "/api/v1/room/ID";
-    private final String LIST_ROOM_URI = "/api/v1/room/hotel/ID/list";
+    private final String LIST_ROOM_URI = "/api/v1/room/hotel/ID";
     private final UpdateRoomRequestDto updateRoomRequestDto = getUpdateRoomRequestDto();
     private final RoomType roomType = new RoomType(getRoomTypeRequestDto());
     private final Room room = getRoom();
